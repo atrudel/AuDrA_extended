@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 import os
+from pathlib import Path
+from typing import List, Union
 
 import numpy as np
 import torchvision
@@ -36,21 +38,24 @@ class ImageFolderWithRatingsAndFilenames(torchvision.datasets.ImageFolder):
         return new_tuple
 
 
-class CustomDataLoader(Dataset):
-    def __init__(self, main_dir, transform):
-        self.main_dir = main_dir
+class CustomDataset(Dataset):
+    def __init__(self, directories: Union[str, List[str]], transform):
+        directories = [directories] if not isinstance(directories, list) else directories
         self.transform = transform
-        self.all_imgs = os.listdir(main_dir)
+        self.all_imgs = sum([
+            list(Path(directory).rglob('*.jpg'))
+            for directory in directories
+        ], start=[])
         self.total_imgs = sorted(self.all_imgs)
 
     def __len__(self):
         return len(self.total_imgs)
 
     def __getitem__(self, idx):
-        img_loc = os.path.join(self.main_dir, self.total_imgs[idx])
+        img_loc = self.total_imgs[idx]
         image = Image.open(img_loc).convert("RGB")
         tensor_image = self.transform(image)
-        img_name = self.total_imgs[idx]
+        img_name = str(self.total_imgs[idx])
         path_plus_image = img_name, tensor_image
         return path_plus_image
 

@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 
 from .invert import Invert
-from .datafuncs import ImageFolderWithRatingsAndFilenames, CustomDataLoader, get_subset
+from .datafuncs import ImageFolderWithRatingsAndFilenames, CustomDataset, get_subset
 
 
 class AuDrADataModule(pl.LightningDataModule):
@@ -170,11 +170,11 @@ def user_Dataloader(args, data_dir = 'user_images/'):
         )
     ])
 
-    data = CustomDataLoader(
-        main_dir = data_dir,
-        transform = transform,
+    data = CustomDataset(
+        directories=data_dir,
+        transform=transform,
     )
 
-    user_loader = DataLoader(data, batch_size = 1)
+    user_loader = DataLoader(data, batch_size=1)
 
     return user_loader
