@@ -7,7 +7,7 @@ from dash.dependencies import Input, Output
 
 def create_dash_visualizer(processed_data: dict) -> dash.Dash:
     images_base64 = processed_data['images_base64']
-    tsne_results = processed_data['tsne_results']
+    principal_components = processed_data['principal_components']
     originalities = processed_data['originalities'].squeeze().numpy()
 
     @callback(
@@ -38,9 +38,9 @@ def create_dash_visualizer(processed_data: dict) -> dash.Dash:
         return True, bbox, children
 
     fig = go.Figure(data=[go.Scatter3d(
-        x=tsne_results[:, 0],
-        y=tsne_results[:, 1],
-        z=tsne_results[:, 2],
+        x=principal_components[:, 0],
+        y=principal_components[:, 1],
+        z=principal_components[:, 2],
         mode='markers',
         marker=dict(
             size=5,

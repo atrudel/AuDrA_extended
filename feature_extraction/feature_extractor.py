@@ -2,16 +2,19 @@ import base64
 from argparse import Namespace
 from io import BytesIO
 from pathlib import Path
+from typing import List
+from sklearn.decomposition import PCA
 
 import torch
 from PIL import Image
 from sklearn.manifold import TSNE
+from tqdm import tqdm
 
 from AuDrA.AuDrA_DataModule import user_Dataloader
-from config import ORIGINAL_AUDRA_SETTINGS, DEVICE
+from config import ORIGINAL_AUDRA_SETTINGS, DEVICE, DATA_DIR
 
 
-def generate_features(original_model, feature_model, directory: Path):
+def process_images(original_model, feature_model, directory: str):
     #  LOAD IMAGES FOR PREDICTIONS
     dataloader = user_Dataloader(args=Namespace(**ORIGINAL_AUDRA_SETTINGS), data_dir=directory)
 
@@ -19,7 +22,7 @@ def generate_features(original_model, feature_model, directory: Path):
     features = []
     originalities = []
     images_base64 = []
-    for _, img in enumerate(dataloader):
+    for img in tqdm(dataloader):
         filename = img[0][0]
         x = img[1]
         x = x.to(DEVICE)
@@ -34,13 +37,15 @@ def generate_features(original_model, feature_model, directory: Path):
 
     features = torch.cat(features, dim=0)
     originalities = torch.cat(originalities, dim=0)
-    tsne = TSNE(n_components=3, verbose=1, perplexity=40, n_iter=300)
-    tsne_results = tsne.fit_transform(features.numpy())
+    pca = PCA(n_components=3)
+    principal_components = pca.fit_transform(features.numpy())
+    # tsne = TSNE(n_components=3, verbose=1, perplexity=40, n_iter=300)
+    # tsne_results = tsne.fit_transform(features.numpy())
 
     return {
         'originalities': originalities,
         'features': features,
-        'tsne_results': tsne_results,
+        'principal_components': principal_components,
         'images_base64': images_base64,
     }
 
