@@ -1,0 +1,1 @@
+DATA_DIR = "../AuDrA_essai/Drawings"

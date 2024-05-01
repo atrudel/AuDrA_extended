@@ -1,0 +1,17 @@
+name: audra
+channels:
+  - anaconda
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - cpuonly
+  - pytorch
+  - torchvision
+  - torchaudio
+  - matplotlib
+  - pandas
+  - pytorch-lightning
+  - scikit-learn
+  - pip

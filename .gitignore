@@ -1,0 +1,7 @@
+Drawings
+.DS_Store
+.idea
+**/__pycache__/**
+**/*.pickle
+**/*.pkl
+**/*.ckpt
