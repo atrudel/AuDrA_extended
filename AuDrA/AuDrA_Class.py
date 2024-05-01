@@ -10,17 +10,13 @@ Please cite Patterson, J. D., Barbot, B., Lloyd-Cox, J., & Beaty, R. (2022, Dece
 
 """
 from __future__ import print_function
-from argparse import ArgumentParser
-from collections import namedtuple, OrderedDict
-import numpy as np
-import os
+
+from collections import OrderedDict
+
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 import torch
-from torch import nn, optim
-import torch.nn.functional as F
-import torchvision
 import torchvision.models as models
+from torch import nn, optim
 
 
 class AuDrA(torch.nn.Module):
@@ -64,8 +60,6 @@ class AuDrA(torch.nn.Module):
             self.model.classifier = classifier
 
 
-
-
     def forward(self, x):
         return self.model(x)
 
@@ -99,8 +93,6 @@ class AuDrA(torch.nn.Module):
         unstandardized_imgs = [(img * self.args.img_stds + self.args.img_means) for img in images]
         sums = torch.stack([torch.sum(img) for img in unstandardized_imgs])
 
-        # print('\n\nPRED SHAPE')
-        # print(pred.shape)
         log = {'val_loss': pred_loss, 'val_mae': mae, 'val_preds': pred, 'val_ratings': ratings.unsqueeze(dim=1), 'val_img_sums': sums}
 
         return{'loss': pred_loss, 'log': log}
@@ -108,52 +100,17 @@ class AuDrA(torch.nn.Module):
 
     def validation_epoch_end(self, outputs):
         val_loss_epoch = torch.stack([x['loss'] for x in outputs]).mean()
-        # maes = torch.cat([x['log']['val_mae'] for x in outputs])
-        # print('\n LOSS SHAPE (STACK)')
-        # print(val_loss_epoch.shape)
-        # print('RATINGS SHAPE')
-        # print(outputs[-1]['log']['ratings'].shape)
-        # print(outputs[-1]['log']['ratings'])
-        # print(outputs)
-        # print(len(outputs))
-        # print(outputs[0])
 
         ratings = torch.cat([x['log']['val_ratings'] for x in outputs])
-        # print(ratings)
-        # print('/n RATINGS MAXIMUM')
-        # print(torch.min(ratings))
-        # print('/n RATINGS MINIMUM')
-        # print(torch.max(ratings))
-        # print('/n RATINGS RANGE')
-        # print(torch.max(ratings)-torch.min(ratings))
-        # print('\n RATINGS SHAPE (CAT)')
-        # print(ratings.shape)
         preds = torch.cat([x['log']['val_preds'] for x in outputs])
-        # print('\n PREDS SHAPE (CAT)')
-        # print(preds.shape)
-        # print('\nRATINGS & shape')
-        # print(ratings)
-        # print(ratings.shape)
-        # print('\nPREDS & shape')
-        # print(preds)
-        # print(preds.shape)
-        # maes = torch.cat([x['log']['val_mae'] for x in outputs])
+
         vx = ratings - torch.mean(ratings)
         vy = preds - torch.mean(preds)
         correlation = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx ** 2)) * torch.sqrt(torch.sum(vy ** 2)))
 
         sums = torch.cat([x['log']['val_img_sums'] for x in outputs]) # THIS IS THE ORIGINAL V WITHOUT UNSQUEEZE
         sums = sums.unsqueeze(1) # NEW MODIFICATION TO GET SHAPE TO (1107,1) INSTEAD OF (1107)
-        # print('\n SUMS SHAPE (CAT)')
-        # print(sums.shape)
-        # print('\n SUMS SHAPE (CAT) UNSQUEEZY')
-        # print(sums.unsq.shape)
-        # print('\n SUMS (CAT)')
-        # print(sums)
-        # print('\n SUMS (CAT) UNSQUEEZY')
-        # print(sums.unsq)
-        # print('\n SUMS SHAPE (STACK)')
-        # print(sums.stack.shape)
+
         vx = ratings - torch.mean(ratings)
         vy = sums - torch.mean(sums)
         ink_correlation = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx ** 2)) * torch.sqrt(torch.sum(vy ** 2)))
@@ -170,9 +127,6 @@ class AuDrA(torch.nn.Module):
         log = {'val_loss_epoch': val_loss_epoch,
                'val_correlation': correlation,
                'val_ink_correlation': ink_correlation,
-               # 'val_ratings': ratings,
-               # 'val_predictions': preds,
-               # 'val_maes': maes,
                }
 
         return {'log': log, 'val_loss_epoch': val_loss_epoch}
@@ -198,7 +152,7 @@ class AuDrA(torch.nn.Module):
 
         ratings = torch.cat([x['log']['test_ratings'] for x in outputs])
         preds = torch.cat([x['log']['test_preds'] for x in outputs])
-        # maes = torch.cat([x['log']['test_mae'] for x in outputs])
+
         vx = ratings - torch.mean(ratings)
         vy = preds - torch.mean(preds)
         correlation = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx ** 2)) * torch.sqrt(torch.sum(vy ** 2)))
@@ -215,16 +169,13 @@ class AuDrA(torch.nn.Module):
         preds_np = preds.cpu()
         preds_np = preds_np.numpy()
         preds_np = preds_np.tolist()
-        # maes_np = maes.numpy()
+
         df = pd.DataFrame({'ratings': ratings_np, 'predictions': preds_np})
         df.to_csv(self.cur_filename)
 
         log = {'test_loss_epoch': test_loss_epoch,
                'test_correlation': correlation,
                'test_ink_correlation': ink_correlation,
-               # 'test_ratings': ratings,
-               # 'test_predictions': preds,
-               # 'test_maes': maes,
                }
 
         return {'log': log, 'test_loss_epoch': test_loss_epoch}

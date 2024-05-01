@@ -10,13 +10,13 @@ Please cite Patterson, J. D., Barbot, B., Lloyd-Cox, J., & Beaty, R. (2022, Dece
 
 """
 from argparse import ArgumentParser
-from AuDrA_DataModule import user_Dataloader
-from AuDrA_Class import AuDrA
-import os
+
 import pandas as pd
-import pytorch_lightning as pl
 import torch
 from torch import nn
+
+from AuDrA_Class import AuDrA
+from AuDrA_DataModule import user_Dataloader
 
 #  USER EDIT (note: add your images to the 'user_images' folder)
 output_filename = "AuDrA_predictions.csv" #the name of the output csv with AuDrA predictions
@@ -59,9 +59,9 @@ for _, img in enumerate(dataloader):
     pred = model.forward(x).item()
     filenames.append(fname)
     predictions.append(pred)
-    print(fname,": ",str(pred))
+    print(fname, ": ", str(pred))
 
 #  SAVE OUTPUT FILE
-out_df = pd.DataFrame(zip(filenames, predictions), columns= ["filenames", "predictions"])
-out_df.to_csv(output_filename, index = False)
+out_df = pd.DataFrame(zip(filenames, predictions), columns=["filenames", "predictions"])
+out_df.to_csv(output_filename, index=False)
 
