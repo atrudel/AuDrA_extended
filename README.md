@@ -5,7 +5,7 @@ Patterson, J. D., Barbot, B., Lloyd-Cox, J., & Beaty, R. E. (2023). AuDrA: An au
 ````
 We worked on their existing code base, available on [OSFHome](https://osf.io/kqn9v/). The orignal code is contained in the first commit of this repository and can be found on the `original_AuDrA` branch.
 
-## Instructions
+## Installation
 
 The conda environment used in this repository is made to be run locally, on CPU.
 
@@ -27,3 +27,15 @@ cd AuDrA_extended
 ```shell
 sh setup.sh
 ```
+
+# Visualize AuDrA features
+Features outputted by the penultimate layer of the pre-trained AuDra Resnet are extracted using
+all images in the dataset, then a PCA is performed for visualization. 
+
+A Flask app allows easy visualization of the first 3 principal components.
+
+From the root of the repository:
+```shell
+python inerpretation.py
+```
+Then click on the link displayed in the terminal to open the Flask app in your browser.
